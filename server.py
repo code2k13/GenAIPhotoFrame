@@ -9,6 +9,10 @@ model = AutoPipelineForText2Image.from_pretrained("stabilityai/sd-turbo")
 prompt = 'flowers kept in a vase, high detail'
 app = Flask(__name__)
 
+def swap_layers(image):
+    red, green, blue = image.split()
+    return Image.merge('RGB', (blue, green, red))
+
 @app.route("/prompt")
 def set_prompt():
     global prompt
@@ -24,6 +28,7 @@ def generate_image():
     image_bytes.seek(0)
     image = Image.open(image_bytes)
     image = image.resize((160,128))
+    image = swap_layers(image)
     image = image.rotate(270,expand=True)
     image = image.convert("P", palette=Image.ADAPTIVE, colors=256)
     bmp_bytes = BytesIO()
